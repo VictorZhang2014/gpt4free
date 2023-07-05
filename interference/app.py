@@ -11,10 +11,11 @@ app = Flask(__name__)
 CORS(app)
 
 @app.route("/chat/completions", methods=['POST'])
-def chat_completions():
-    streaming = request.json.get('stream', False)
-    model = request.json.get('model', 'gpt-3.5-turbo')
-    messages = request.json.get('messages')
+def chat_completions():  
+    req_param = json.loads(request.data)
+    streaming = True
+    model = req_param.get('model')
+    messages = req_param.get('messages') 
     
     response = ChatCompletion.create(model=model, stream=streaming,
                                      messages=messages)
@@ -48,7 +49,7 @@ def chat_completions():
             }]
         }
 
-    def stream():
+    def stream(): 
         for token in response:
             completion_timestamp = int(time.time())
             completion_id = ''.join(random.choices(
