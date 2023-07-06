@@ -1,20 +1,25 @@
 # encoding: utf-8
 import json
-from g4f import Model, ChatCompletion, Provider
+from g4f import ChatCompletion 
 from flask import Flask, request, Response
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/chat/completions", methods=['POST'])
-def chat_completions():  
+@app.route("/", methods=['GET'])
+def index():  
+    return "Hello I am g4f"
+
+@app.route("/chat/completions", methods=['OPTIONS', 'POST'])
+@cross_origin(origins='*')
+def chat_completions():   
     req_param = json.loads(request.data)
     streaming = True
     model = req_param.get('model')
-    messages = req_param.get('messages') 
-    
+    messages = req_param.get('messages')  
+
     response = ChatCompletion.create(model=model, messages=messages, stream=True)
     
     if not streaming:
@@ -35,6 +40,6 @@ if __name__ == '__main__':
         'host': '0.0.0.0',
         'port': 9011,
         'debug': False
-    }
-    app.run(**config)
+    } 
+    app.run(**config) 
 
