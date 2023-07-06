@@ -43,3 +43,8 @@ if __name__ == '__main__':
     } 
     app.run(**config) 
 
+
+# Run with gunicorn 
+# gunicorn entry:app --bind 0.0.0.0:9011 --daemon
+
+# lsof -i :9011
