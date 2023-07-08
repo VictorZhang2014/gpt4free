@@ -1,6 +1,6 @@
 # encoding: utf-8
 import json
-from g4f import ChatCompletion 
+from g4f import ChatCompletion, Provider, Model
 from flask import Flask, request, Response
 from flask_cors import CORS, cross_origin
 
@@ -10,29 +10,25 @@ CORS(app)
 
 @app.route("/", methods=['GET'])
 def index():  
-    return "Hello I am g4f"
+    return "Hello I am ChatGPT for FREE."
+
 
 @app.route("/chat/completions", methods=['OPTIONS', 'POST'])
 @cross_origin(origins='*')
-def chat_completions():   
-    req_param = json.loads(request.data)
-    streaming = True
+def chat_completions():    
+    req_param = json.loads(request.data) 
+    streaming = True if req_param.get('streaming') == 'true' else False
     model = req_param.get('model')
-    messages = req_param.get('messages')  
-
-    response = ChatCompletion.create(model=model, messages=messages, stream=True)
+    messages = req_param.get('messages')   
     
-    if not streaming:
-        while 'curl_cffi.requests.errors.RequestsError' in response:
-            response = ChatCompletion.create(model=model, stream=streaming,
-                                             messages=messages)
-        return "data: finish_reason=stop\n\n"
-
-    def stream():  
-        for token in response: 
-            yield 'data: {}\n\n'.format(token) 
-
-    return app.response_class(stream(), mimetype='text/event-stream')
+    if not streaming: 
+        return ChatCompletion.create(model=model, provider=Provider.DeepAi, messages=messages) 
+    else:
+        response = ChatCompletion.create(model=model, messages=messages, stream=True)
+        def stream():  
+            for token in response: 
+                yield 'data: {}\n\n'.format(token) 
+        return app.response_class(stream(), mimetype='text/event-stream')
 
 
 if __name__ == '__main__':
@@ -47,4 +43,5 @@ if __name__ == '__main__':
 # Run with gunicorn 
 # gunicorn entry:app --bind 0.0.0.0:9011 --daemon
 
-# lsof -i :9011
+# lsof -i :9011 
+
